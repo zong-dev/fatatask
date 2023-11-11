@@ -1,9 +1,11 @@
 import 'package:fasta/pages/profile.dart';
+import 'package:fasta/providers/user.dart';
 import 'package:fasta/theme.dart';
 import 'package:fasta/utils/utils.dart';
 import 'package:fasta/widgets/button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -19,17 +21,18 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
           child: Center(
-            child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             Text(
               "Authenticated User",
-              style: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             verticalSpacer(12),
             Text(
-              "Authenticated User Name",
+              context.watch<UserProvider>().username ?? '',
               style: GoogleFonts.montserrat(
                   fontSize: 20, fontWeight: FontWeight.w800),
             ),
@@ -42,9 +45,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     screen: const ProfilePage(), type: NavigationType.push),
               ),
             )
-                  ],
-                ),
-          )),
+          ],
+        ),
+      )),
     );
   }
 }

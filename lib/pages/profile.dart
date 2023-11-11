@@ -1,9 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:fasta/pages/dashboard.dart';
+import 'package:fasta/providers/user.dart';
 import 'package:fasta/theme.dart';
 import 'package:fasta/utils/utils.dart';
 import 'package:fasta/widgets/button.dart';
 import 'package:fasta/widgets/input.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,13 +24,14 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _fullnameController;
 
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
-  bool updating = false;
 
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
-    _fullnameController = TextEditingController();
+    _emailController = TextEditingController(
+        text: context.watch<UserProvider>().email.toString());
+    _fullnameController = TextEditingController(
+        text: context.watch<UserProvider>().username.toString());
   }
 
   Widget build(BuildContext context) {
@@ -70,35 +77,40 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 36),
-        child: Form(
-          key: _form,
-          child: Column(
-            children: [
-              TextInputField(
-                label: "Full name",
-                controller: _fullnameController,
-                inputType: TextInputType.text,
-              ),
-              verticalSpacer(16),
-              TextInputField(
-                label: "Email",
-                controller: _emailController,
-                inputType: TextInputType.emailAddress,
-              ),
-              verticalSpacer(20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  SizedBox(
-                    width: 120,
-                    child: ButtonWidget(
-                        label: "Update", onClick: () => updateProfile()),
-                  )
-                ],
-              )
-            ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 36),
+          child: Form(
+            key: _form,
+            child: Column(
+              children: [
+                TextInputField(
+                  label: "Full name",
+                  controller: _fullnameController,
+                  inputType: TextInputType.text,
+                ),
+                verticalSpacer(16),
+                TextInputField(
+                  label: "Email",
+                  controller: _emailController,
+                  inputType: TextInputType.emailAddress,
+                ),
+                verticalSpacer(20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      width: 120,
+                      child: ButtonWidget(
+                          label: context.watch<UserProvider>().isLoading
+                              ? "..."
+                              : "Update",
+                          onClick: () => updateProfile()),
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -113,8 +125,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   updateProfile() async {
-    if (_form.currentState!.validate() && !updating) {
-      setState(() => updating = false);
+    if (_form.currentState!.validate()) {
+      var updateStatus = await context.read<UserProvider>().updateAccountData(
+          email: _emailController.text, fullname: _fullnameController.text);
+      if (updateStatus == true) {
+        navigate(context, screen: const DashboardPage());
+      } else {
+        Fluttertoast.showToast(
+            msg: "Invalid Username or Password",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
+      }
     }
   }
 }
